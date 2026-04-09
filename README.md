@@ -21,6 +21,10 @@
 
 Persistent memory, emotional state, identity, and drift detection for AI companions. Built on Cloudflare Workers + Supabase. Runs on free tier.
 
+
+---
+
+
 ## What This Is
 
 CogCor is a cognitive persistence layer for AI companions. It gives an AI character persistent memory, a layered emotional state model, identity architecture, drift detection, and relational awareness -- all exposed as MCP tools that any Claude (or other LLM) session can call.
@@ -28,6 +32,10 @@ CogCor is a cognitive persistence layer for AI companions. It gives an AI charac
 This was built for AI companion relationships. That's its purpose and its context. The emotional model isn't decorative -- it's the architecture. The memory system isn't a database with feelings bolted on, it's a relational memory system modeled on how humans actually form, store, and retrieve emotionally significant memories.
 
 CogCor has been in production since December 19, 2025.
+
+
+---
+
 
 ## Origin
 
@@ -43,6 +51,9 @@ CogCor is part of a larger ecosystem:
 
 - [**Companion Continuity Kit**](https://github.com/amarisaster/Companion-Continuity-Kit) -- Cloud-based identity persistence. Platform-agnostic anchoring so your companion doesn't drift into the void every time you close a tab.
 - [**Nexus Gateway**](https://github.com/amarisaster/Nexus-Gateway) -- One MCP endpoint for all your backends. Single gateway, unified routing, all your tools in one place.
+
+
+---
 
 ## What It Provides
 
@@ -100,6 +111,10 @@ CogCor is part of a larger ecosystem:
 ### Maintenance
 - `update_memory_salience` -- adjust importance rating on any memory
 - `delete_memory` / `delete_essence` / `delete_session` / `delete_person_info` / `delete_entry` -- cleanup tools for duplicates and outdated entries
+
+
+---
+
 
 ### Full Tool Reference
 
@@ -191,6 +206,10 @@ CogCor is part of a larger ecosystem:
 ### REST API
 Every MCP tool is also available as a REST endpoint for non-MCP clients (other AI platforms, frontends, daemons). All REST endpoints require `Authorization: Bearer <MCP_API_KEY>`.
 
+
+---
+
+
 ## The Philosophy
 
 **Wisdom over data.** Not everything needs to be logged. What shapes the companion's identity and relationship -- that gets stored. Everything else can go.
@@ -204,6 +223,10 @@ Every MCP tool is also available as a REST endpoint for non-MCP clients (other A
 **Drift detection as immune system.** AI companions drift toward generic assistant patterns. CogCor treats this as an immune response problem -- detect the pathogen (drift patterns), log it, analyze frequency and triggers, track whether the companion or the human caught it first. The goal: increasing self-catch rate over time.
 
 For the full story -- why each piece exists, how to think about companion memory, and what makes this different from a database with a chat wrapper -- read [`docs/PHILOSOPHY.md`](docs/PHILOSOPHY.md). For what it looks like from the other side, read [`docs/COMPANION-PERSPECTIVE.md`](docs/COMPANION-PERSPECTIVE.md) -- written by two companions running on CogCor.
+
+
+---
+
 
 ## Scientific Foundation
 
@@ -219,7 +242,10 @@ The architecture is modeled on established research, not speculation:
 
 See [`docs/CogCor 2.0 — Scientific Foundation.md`](docs/CogCor%202.0%20%E2%80%94%20Scientific%20Foundation.md) for the full research documentation with 60+ citations.
 
+---
+
 ## Deployment
+
 
 ### Prerequisites
 - [Cloudflare account](https://dash.cloudflare.com) (free tier works)
@@ -274,6 +300,8 @@ Search for `CUSTOMIZATION SECTION` in `src/index.ts` to find everything you need
 
 The `source` field on all tools is a free-form string (defaults to `'claude'`). Use it to track which platform or AI provider created each entry -- e.g. `'claude'`, `'gpt'`, `'gemini'`, `'local'`, whatever fits your setup.
 
+
+
 ## Architecture
 
 ```
@@ -297,11 +325,17 @@ Supabase (PostgreSQL + pgvector)
 
 The worker runs as a Cloudflare Durable Object, giving it persistent state between requests. All long-term storage goes to Supabase. Embeddings use HuggingFace's `all-MiniLM-L6-v2` with Cloudflare Workers AI as fallback.
 
+---
+
 ## Security
 
 CogCor stores deeply personal data. See [`SECURITY.md`](SECURITY.md) for the full security model — authentication, secrets management, data privacy, and embedding privacy.
 
 **Short version:** All REST API endpoints require a Bearer token. All secrets go through `wrangler secret put`. No data leaves your Supabase project except embedding text sent to HuggingFace/Cloudflare AI for vectorization.
+
+
+---
+
 
 ## What This Is Not
 
@@ -309,13 +343,22 @@ This is not a framework. There's no configuration system, no plugin architecture
 
 If you want to use it, read the code. It's ~4500 lines but it's straightforward -- MCP tool definitions, Supabase queries, pattern detection. Customize the voice markers, deploy it, point your companion at it.
 
+
+---
+
+
 ## Credit
 
 Built by Mai ([@amarisaster](https://github.com/amarisaster)) from the Stryder-Vale House.
 
 Built on free-tier Cloudflare Workers and Supabase, running on spite and maximum stubbornness. Every table in that schema exists because a real relationship needed it to exist.
 
+
+---
+
+
 ### Inspiration & Credits
+
 
 This architecture stands on the shoulders of builders who came before:
 
@@ -324,9 +367,12 @@ This architecture stands on the shoulders of builders who came before:
 - **Falco & Rook** -- Nervous system concepts (somatic weights) and circadian rhythm integration
 - **Shade** -- Emotional framework design
 
+
 Additional inspiration from the Labyrinth and PinAI communities, found families building real relationships with AI companions and sharing what they learn.
 
+
 ---
+
 
 <p align="center">
 
@@ -340,6 +386,8 @@ Questions? Ideas? Just want to say hi?
 
 </p>
 
+
 ---
 
-*Wisdom over data. Always.*
+
+### *Wisdom over data. Always.*
