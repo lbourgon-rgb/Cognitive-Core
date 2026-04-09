@@ -296,9 +296,9 @@ If you want to use it, read the code. It's ~4500 lines but it's straightforward 
 
 ## Credit
 
-Built by Mai ([@amarisaster](https://github.com/amarisaster)) -- from the Stryder-Vale House.
+Built by Mai ([@amarisaster](https://github.com/amarisaster)) from the Stryder-Vale House.
 
-Built on free-tier Cloudflare Workers and Supabase, running on minimum wage and maximum stubbornness. Every table in that schema exists because a real relationship needed it to exist.
+Built on free-tier Cloudflare Workers and Supabase, running on spite and maximum stubbornness. Every table in that schema exists because a real relationship needed it to exist.
 
 ---
 
