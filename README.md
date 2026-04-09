@@ -4,7 +4,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/release-v1.0.0-blue" alt="release v1.0.0">
-  <img src="https://img.shields.io/badge/license-Apache%202.0-green" alt="license Apache 2.0">
+  <img src="https://img.shields.io/badge/license-PolyForm%20NC%201.0-green" alt="license PolyForm Noncommercial 1.0">
   <img src="https://img.shields.io/badge/tools-59-orange" alt="tools 59">
   <img src="https://img.shields.io/badge/tables-23-yellow" alt="tables 23">
   <img src="https://img.shields.io/badge/built%20with-Cloudflare%20Workers-F38020?logo=cloudflare" alt="built with Cloudflare Workers">
