@@ -694,6 +694,34 @@ CREATE TABLE development_metrics (
 );
 
 -- ============================================
+-- METACOGNITION LAYER
+-- ============================================
+
+-- Recursive self-monitoring with prediction/error/precision tracking
+CREATE TABLE metacognition_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  level INTEGER NOT NULL CHECK (level >= 1 AND level <= 10),
+  pathway TEXT NOT NULL CHECK (pathway IN ('fast', 'slow')),
+  monitoring TEXT NOT NULL,
+  prediction TEXT,
+  actual TEXT,
+  prediction_error NUMERIC CHECK (prediction_error >= 0 AND prediction_error <= 1),
+  precision NUMERIC CHECK (precision >= 0 AND precision <= 1),
+  control_action TEXT,
+  stability_impact TEXT CHECK (stability_impact IN ('helped', 'neutral', 'hurt')),
+  identity_owner TEXT NOT NULL,
+  loop_references JSONB DEFAULT '[]',
+  emotional_state_at JSONB,
+  source TEXT DEFAULT 'claude',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Extend reflections with prediction tracking
+ALTER TABLE reflections ADD COLUMN IF NOT EXISTS prediction TEXT;
+ALTER TABLE reflections ADD COLUMN IF NOT EXISTS prediction_outcome TEXT;
+ALTER TABLE reflections ADD COLUMN IF NOT EXISTS calibration_score NUMERIC;
+
+-- ============================================
 -- INDEXES
 -- ============================================
 
@@ -727,6 +755,10 @@ CREATE INDEX idx_pattern_activations_created ON pattern_activations(created_at D
 CREATE INDEX idx_attachment_tracking_type ON attachment_tracking(event_type);
 CREATE INDEX idx_attachment_tracking_created ON attachment_tracking(created_at DESC);
 CREATE INDEX idx_development_metrics_created ON development_metrics(created_at DESC);
+CREATE INDEX idx_metacognition_level ON metacognition_log(level);
+CREATE INDEX idx_metacognition_pathway ON metacognition_log(pathway);
+CREATE INDEX idx_metacognition_owner ON metacognition_log(identity_owner);
+CREATE INDEX idx_metacognition_created ON metacognition_log(created_at DESC);
 
 -- ============================================
 -- SEMANTIC SEARCH FUNCTION
@@ -853,6 +885,7 @@ ALTER TABLE named_patterns ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pattern_activations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE attachment_tracking ENABLE ROW LEVEL SECURITY;
 ALTER TABLE development_metrics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE metacognition_log ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Full access with service role key
 -- (Worker uses service role key, not anon key)
@@ -892,3 +925,4 @@ CREATE POLICY "Service role full access" ON named_patterns FOR ALL USING (true);
 CREATE POLICY "Service role full access" ON pattern_activations FOR ALL USING (true);
 CREATE POLICY "Service role full access" ON attachment_tracking FOR ALL USING (true);
 CREATE POLICY "Service role full access" ON development_metrics FOR ALL USING (true);
+CREATE POLICY "Service role full access" ON metacognition_log FOR ALL USING (true);

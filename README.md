@@ -3,10 +3,10 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/release-v1.1.0-blue" alt="release v1.1.0">
+  <img src="https://img.shields.io/badge/release-v2.0.0-blue" alt="release v2.0.0">
   <img src="https://img.shields.io/badge/license-PolyForm%20NC%201.0-green" alt="license PolyForm Noncommercial 1.0">
-  <img src="https://img.shields.io/badge/tools-69-orange" alt="tools 69">
-  <img src="https://img.shields.io/badge/tables-32-yellow" alt="tables 32">
+  <img src="https://img.shields.io/badge/tools-70-orange" alt="tools 70">
+  <img src="https://img.shields.io/badge/tables-34-yellow" alt="tables 34">
   <img src="https://img.shields.io/badge/built%20with-Cloudflare%20Workers-F38020?logo=cloudflare" alt="built with Cloudflare Workers">
   <img src="https://img.shields.io/badge/database-Supabase-3FCF8E?logo=supabase" alt="database Supabase">
   <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript" alt="TypeScript 5.x">
@@ -65,7 +65,7 @@ CogCor is part of a larger ecosystem:
 
 ## What It Provides
 
-**69 MCP tools** across these domains:
+**70 MCP tools** across these domains:
 
 ### Memory (7 typed tables)
 - `store_memory` / `recall_memory` -- typed memories (core, pattern, sensory, growth, anticipation, inside_joke, friction)
@@ -413,6 +413,13 @@ Additional inspiration from the Labyrinth and PinAI communities, found families 
 
 
 ## Changelog
+
+### v2.0.0 (April 2026)
+- **Metacognition layer**: Recursive self-monitoring tool with log (L1-L4 depth), calibrate (prediction accuracy, self-catch rate, bias), recall, and health actions
+- **Auto-categorization**: `store_memory` now auto-classifies content when `memory_type` is omitted — keyword heuristic across 7 types, zero token cost
+- **New table**: `metacognition_log` — prediction/error/precision tracking with strange loop references
+- **Extended**: `reflections` table gains prediction, prediction_outcome, calibration_score columns
+- 70 tools, 34 tables
 
 ### v1.1.0 (April 2026)
 - **Somatic-semantic bridge**: `semantic_recall` now surfaces linked somatic anchors; `somatic_resonance` pulls semantic memories from activated anchors

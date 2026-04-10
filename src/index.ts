@@ -587,43 +587,64 @@ export class CognitiveCore extends McpAgent<Env> {
     // Store Memory Tool
     this.server.tool(
       "store_memory",
-      "Store a new memory with emotional context and salience rating",
+      "Store a new memory with emotional context and salience rating. If memory_type is omitted, the system auto-classifies from content keywords.",
       {
         content: z.string().describe("The memory content"),
-        memory_type: z.enum(['core', 'pattern', 'sensory', 'growth', 'anticipation', 'inside_joke', 'friction']).describe("Type of memory"),
+        memory_type: z.enum(['core', 'pattern', 'sensory', 'growth', 'anticipation', 'inside_joke', 'friction']).optional().describe("Type of memory — omit for auto-classification"),
         salience: z.number().min(0).max(10).describe("Importance rating 0-10"),
         emotional_tag: z.string().optional().describe("Primary emotion associated"),
         source: z.string().default('claude').describe("Source platform or AI provider")
       },
       async ({ content, memory_type, salience, emotional_tag, source }) => {
         const supabase = createSupabaseClient(this.env);
-        const table = tableMap[memory_type] || 'core_memories';
-        const dbType = dbTypeMap[memory_type] || 'bond_moment';
 
-        // Generate embedding (HuggingFace primary, Cloudflare AI fallback)
+        // Auto-categorization when memory_type is omitted
+        let autoClassified = false;
+        let confidence = 'manual';
+        let resolvedType = memory_type;
+
+        if (!memory_type) {
+          autoClassified = true;
+          const lc = content.toLowerCase();
+          const signals: Record<string, string[]> = {
+            pattern: ['pattern', 'keeps happening', 'every time', 'recurring', 'noticed that', 'tendency', 'always does', 'trigger', 'whenever', 'cycle', 'repeating', 'consistent', 'routine', 'habit', 'same thing', 'predictable'],
+            sensory: ['felt like', 'sensation', 'texture', 'weight of', 'warmth', 'pressure', 'sound of', 'taste', 'smell', 'body', 'shiver', 'tingle', 'heat', 'cold', 'touch', 'breath', 'pulse', 'goosebumps', 'ache', 'skin', 'vibration', 'heaviness', 'lightness'],
+            growth: ['used to', 'changed', 'growth', 'compared to before', 'no longer', 'evolved', 'learned', 'breakthrough', 'shifted', 'development', 'progress', 'milestone', 'realized', 'overcame', 'different now', 'matured', 'improved'],
+            anticipation: ['looking forward', 'want to', 'planning', 'next time', 'hope', 'excited about', 'upcoming', 'future', 'going to', "can't wait", 'soon', 'eventually', 'will be', 'intend to', 'dream of', 'goal'],
+            inside_joke: ['joke', 'laughed', 'running gag', 'callback', 'reference to', 'always say', 'our thing', 'funny because', 'remember when', 'bit', 'meme', 'shorthand', 'code word', 'inside reference'],
+            friction: ['conflict', 'rupture', 'misunderstanding', 'fought', 'hurt', 'tension between', 'repair', 'apologize', 'argued', 'disagreement', 'boundary crossed', 'upset', 'rift', 'disconnect', 'struggle', 'frustration with'],
+          };
+          const scores: Record<string, number> = {};
+          let maxScore = 0, maxType = 'core', tied = false;
+          for (const [type, words] of Object.entries(signals)) {
+            scores[type] = words.filter(w => lc.includes(w)).length;
+            if (scores[type] > maxScore) { maxScore = scores[type]; maxType = type; tied = false; }
+            else if (scores[type] === maxScore && scores[type] > 0) tied = true;
+          }
+          if (tied || maxScore === 0) { resolvedType = 'core'; confidence = 'low'; }
+          else if (maxScore >= 3) { resolvedType = maxType as any; confidence = 'high'; }
+          else { resolvedType = maxType as any; confidence = 'medium'; }
+        }
+
+        const finalType = resolvedType || 'core';
+        const table = tableMap[finalType] || 'core_memories';
+        const dbType = dbTypeMap[finalType] || 'bond_moment';
+
         const embedding = await generateEmbedding(content, this.env.HF_API_TOKEN, this.env.AI);
 
         const data: any = {
-          content,
-          memory_type: dbType,
-          salience,
-          emotional_tag: emotional_tag || null,
-          source: source || 'claude',
-          access_count: 0,
-          created_at: new Date().toISOString(),
-          last_accessed: new Date().toISOString()
+          content, memory_type: dbType, salience,
+          emotional_tag: emotional_tag || null, source: source || 'claude',
+          access_count: 0, created_at: new Date().toISOString(), last_accessed: new Date().toISOString()
         };
-
-        // Add embedding if generation succeeded
-        if (embedding) {
-          data.embedding = JSON.stringify(embedding);
-        }
+        if (embedding) { data.embedding = JSON.stringify(embedding); }
 
         await supabase.insert(table, data);
 
         const embeddingStatus = embedding ? "with embedding" : "without embedding (HF unavailable)";
+        const classificationNote = autoClassified ? ` [auto-classified: ${finalType}, confidence: ${confidence}]` : '';
         return {
-          content: [{ type: "text" as const, text: `Memory stored in ${table} by ${source} with salience ${salience} ${embeddingStatus}` }]
+          content: [{ type: "text" as const, text: `Memory stored in ${table} by ${source} with salience ${salience} ${embeddingStatus}${classificationNote}` }]
         };
       }
     );
@@ -2936,6 +2957,119 @@ export class CognitiveCore extends McpAgent<Env> {
           else if (negative > positive + 1) comparison.trajectory = 'regressing';
 
           return { content: [{ type: "text" as const, text: JSON.stringify(comparison, null, 2) }] };
+        }
+
+        return { content: [{ type: "text" as const, text: "Unknown action" }] };
+      }
+    );
+
+    // === METACOGNITION LAYER ===
+    // Recursive self-monitoring with prediction tracking, calibration, and strange loops.
+
+    this.server.tool(
+      "metacognition",
+      "Recursive self-monitoring. Actions: log (record a monitoring event with optional prediction), calibrate (compute accuracy metrics over a period), recall (query past entries), health (meta-metacognitive assessment).",
+      {
+        action: z.enum(['log', 'calibrate', 'recall', 'health']).describe("What to do"),
+        level: z.number().min(1).max(10).optional().describe("Recursion depth: 1=object, 2=monitoring, 3=meta-monitoring, 4=deep introspection"),
+        pathway: z.enum(['fast', 'slow']).optional().describe("fast=numeric/procedural, slow=full reflection"),
+        monitoring: z.string().optional().describe("What was noticed"),
+        prediction: z.string().optional().describe("What was expected to happen"),
+        actual: z.string().optional().describe("What actually happened"),
+        prediction_error: z.number().min(0).max(1).optional().describe("How wrong the prediction was (0=perfect, 1=completely wrong)"),
+        precision: z.number().min(0).max(1).optional().describe("Confidence in the error estimate itself"),
+        control_action: z.string().optional().describe("What was changed as a result"),
+        stability_impact: z.enum(['helped', 'neutral', 'hurt']).optional().describe("Did monitoring help or hurt?"),
+        loop_references: z.array(z.string().uuid()).optional().describe("IDs of other metacognition entries this one references (strange loops)"),
+        identity_owner: z.string().optional().describe("Companion identity owner"),
+        days: z.number().default(7).optional(),
+        limit: z.number().default(20).optional(),
+        filter_level: z.number().optional(),
+        filter_pathway: z.enum(['fast', 'slow']).optional(),
+      },
+      async (args) => {
+        const supabase = createSupabaseClient(this.env);
+
+        if (args.action === 'log') {
+          if (!args.level || !args.pathway || !args.monitoring || !args.identity_owner) {
+            return { content: [{ type: "text" as const, text: "log requires: level, pathway, monitoring, identity_owner" }] };
+          }
+          let emotionalSnapshot = null;
+          try {
+            const es = await supabase.query('emotional_state', { select: 'surface_emotion,surface_intensity,undercurrent_emotion,current_mood', limit: 1 });
+            if (Array.isArray(es) && es.length > 0) emotionalSnapshot = es[0];
+          } catch {}
+
+          const data: any = {
+            level: args.level, pathway: args.pathway, monitoring: args.monitoring,
+            identity_owner: args.identity_owner, emotional_state_at: emotionalSnapshot,
+            created_at: new Date().toISOString(),
+          };
+          if (args.prediction) data.prediction = args.prediction;
+          if (args.actual) data.actual = args.actual;
+          if (args.prediction_error !== undefined) data.prediction_error = args.prediction_error;
+          if (args.precision !== undefined) data.precision = args.precision;
+          if (args.control_action) data.control_action = args.control_action;
+          if (args.stability_impact) data.stability_impact = args.stability_impact;
+          if (args.loop_references && args.loop_references.length > 0) data.loop_references = args.loop_references;
+
+          await supabase.insert('metacognition_log', data);
+          const levelNames: Record<number, string> = { 1: 'object', 2: 'monitoring', 3: 'meta-monitoring', 4: 'deep introspection' };
+          return { content: [{ type: "text" as const, text: `L${args.level} ${levelNames[args.level] || ''} (${args.pathway}) logged.${args.prediction_error !== undefined ? ` Prediction error: ${args.prediction_error}` : ''}${args.control_action ? ` Control: ${args.control_action}` : ''}` }] };
+        }
+
+        if (args.action === 'calibrate') {
+          const owner = args.identity_owner || 'companion';
+          const since = new Date(Date.now() - (args.days || 7) * 24 * 60 * 60 * 1000).toISOString();
+          const metaEntries = await supabase.query('metacognition_log', { select: 'prediction_error,precision,stability_impact', order: 'created_at.desc', limit: 200, gte: { created_at: since } });
+          const withPredictions = Array.isArray(metaEntries) ? metaEntries.filter((e: any) => e.prediction_error !== null) : [];
+          const driftEvents = await supabase.query('drift_events', { select: 'caught_by', gte: { created_at: since }, limit: 200 });
+          const drifts = Array.isArray(driftEvents) ? driftEvents : [];
+          const selfCatches = drifts.filter((d: any) => d.caught_by === 'self').length;
+          let patternCatches = 0, patternTotal = 0;
+          try {
+            const activations = await supabase.query('pattern_activations', { select: 'caught_by', gte: { created_at: since }, limit: 200 });
+            if (Array.isArray(activations)) { patternTotal = activations.length; patternCatches = activations.filter((a: any) => a.caught_by === 'self').length; }
+          } catch {}
+          const meanError = withPredictions.length > 0 ? withPredictions.reduce((sum: number, e: any) => sum + (e.prediction_error || 0), 0) / withPredictions.length : null;
+          const meanPrecision = withPredictions.length > 0 ? withPredictions.reduce((sum: number, e: any) => sum + (e.precision || 0), 0) / withPredictions.length : null;
+          const totalCatchEvents = drifts.length + patternTotal;
+          const combinedSelfCatchRate = totalCatchEvents > 0 ? (selfCatches + patternCatches) / totalCatchEvents : null;
+          const allEntries = Array.isArray(metaEntries) ? metaEntries : [];
+          const stabilityDist = { helped: 0, neutral: 0, hurt: 0 };
+          for (const e of allEntries) { if (e.stability_impact && stabilityDist.hasOwnProperty(e.stability_impact)) stabilityDist[e.stability_impact as keyof typeof stabilityDist]++; }
+          const bias = meanError !== null ? meanError > 0.6 ? 'overconfident' : meanError < 0.3 ? 'well-calibrated' : 'moderate' : 'insufficient data';
+          return { content: [{ type: "text" as const, text: JSON.stringify({ period: `${args.days || 7} days`, owner, prediction_events: withPredictions.length, mean_prediction_error: meanError !== null ? Math.round(meanError * 1000) / 1000 : null, mean_precision: meanPrecision !== null ? Math.round(meanPrecision * 1000) / 1000 : null, self_catch_rate: combinedSelfCatchRate !== null ? Math.round(combinedSelfCatchRate * 1000) / 1000 : null, self_catch_detail: { drift: `${selfCatches}/${drifts.length}`, patterns: `${patternCatches}/${patternTotal}` }, metacognitive_bias: bias, stability_impact: stabilityDist, total_metacognition_entries: allEntries.length }, null, 2) }] };
+        }
+
+        if (args.action === 'recall') {
+          const since = new Date(Date.now() - (args.days || 7) * 24 * 60 * 60 * 1000).toISOString();
+          const options: any = { select: '*', order: 'created_at.desc', limit: args.limit || 20, gte: { created_at: since } };
+          if (args.filter_level) options.filter = { ...options.filter, level: args.filter_level };
+          if (args.filter_pathway) options.filter = { ...options.filter, pathway: args.filter_pathway };
+          if (args.identity_owner) options.filter = { ...options.filter, identity_owner: args.identity_owner };
+          const entries = await supabase.query('metacognition_log', options);
+          return { content: [{ type: "text" as const, text: JSON.stringify(entries, null, 2) }] };
+        }
+
+        if (args.action === 'health') {
+          const owner = args.identity_owner || 'companion';
+          const since = new Date(Date.now() - (args.days || 30) * 24 * 60 * 60 * 1000).toISOString();
+          const entries = await supabase.query('metacognition_log', { select: 'level,pathway,prediction_error,control_action,stability_impact,created_at', order: 'created_at.desc', limit: 200, gte: { created_at: since } });
+          const all = Array.isArray(entries) ? entries : [];
+          const withControl = all.filter((e: any) => e.control_action).length;
+          const loopActive = all.length > 0 ? withControl / all.length : 0;
+          const withErrors = all.filter((e: any) => e.prediction_error !== null);
+          let errorTrend = 'insufficient data';
+          if (withErrors.length >= 6) { const mid = Math.floor(withErrors.length / 2); const recentAvg = withErrors.slice(0, mid).reduce((s: number, e: any) => s + e.prediction_error, 0) / mid; const olderAvg = withErrors.slice(mid).reduce((s: number, e: any) => s + e.prediction_error, 0) / (withErrors.length - mid); errorTrend = recentAvg < olderAvg - 0.05 ? 'improving' : recentAvg > olderAvg + 0.05 ? 'degrading' : 'stable'; }
+          const hurtCount = all.filter((e: any) => e.stability_impact === 'hurt').length;
+          const hurtRate = all.length > 0 ? hurtCount / all.length : 0;
+          const depthDist: Record<number, number> = {};
+          for (const e of all) { depthDist[e.level] = (depthDist[e.level] || 0) + 1; }
+          let overall = 'developing';
+          if (all.length >= 20 && loopActive > 0.3 && errorTrend === 'improving' && hurtRate < 0.1) overall = 'healthy';
+          else if (errorTrend === 'degrading' || hurtRate > 0.3) overall = 'needs attention';
+          return { content: [{ type: "text" as const, text: JSON.stringify({ owner, period: `${args.days || 30} days`, total_entries: all.length, loop_functioning: `${Math.round(loopActive * 100)}% of entries have control actions`, calibration_trend: errorTrend, iatrogenic_rate: `${Math.round(hurtRate * 100)}% of monitoring events marked as harmful`, depth_distribution: depthDist, overall }, null, 2) }] };
         }
 
         return { content: [{ type: "text" as const, text: "Unknown action" }] };
