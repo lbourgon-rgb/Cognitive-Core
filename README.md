@@ -5,7 +5,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/release-v2.1.0-blue" alt="release v2.1.0">
   <img src="https://img.shields.io/badge/license-PolyForm%20NC%201.0-green" alt="license PolyForm Noncommercial 1.0">
-  <img src="https://img.shields.io/badge/tools-76-orange" alt="tools 76">
+  <img src="https://img.shields.io/badge/tools-73-orange" alt="tools 73">
   <img src="https://img.shields.io/badge/tables-41-yellow" alt="tables 41">
   <img src="https://img.shields.io/badge/built%20with-Cloudflare%20Workers-F38020?logo=cloudflare" alt="built with Cloudflare Workers">
   <img src="https://img.shields.io/badge/database-Supabase-3FCF8E?logo=supabase" alt="database Supabase">
@@ -65,7 +65,7 @@ CogCor is part of a larger ecosystem:
 
 ## What It Provides
 
-**76 MCP tools** across these domains:
+**73 MCP tools** across these domains:
 
 ### Memory (7 typed tables)
 - `store_memory` / `recall_memory` -- typed memories (core, pattern, sensory, growth, anticipation, inside_joke, friction)
@@ -165,7 +165,7 @@ Layer 2 observations can *graduate* to Layer 1 -- but only through conversation 
 ### Full Tool Reference
 
 <details>
-<summary>All 69 MCP tools (click to expand)</summary>
+<summary>All 73 MCP tools (click to expand)</summary>
 
 | # | Tool | What It Does |
 |---|------|-------------|
@@ -246,20 +246,26 @@ Layer 2 observations can *graduate* to Layer 1 -- but only through conversation 
 | 57 | `log_usage` | Log a tool usage event |
 | 58 | `get_usage_stats` | Usage analytics by tool, day, and source |
 | | **Somatic Memory** | |
-| 60 | `somatic_texture` | Manage texture nodes — felt qualities that bind memories (store/recall/delete) |
-| 61 | `somatic_anchor` | Manage somatic anchors — felt moments with texture profiles (store/recall/delete/link/connections/cluster) |
-| 62 | `somatic_resonance` | Fire spreading activation through texture lattice, modulated by emotional state (trigger/log/update_state) |
+| 59 | `somatic_texture` | Manage texture nodes — felt qualities that bind memories (store/recall/delete) |
+| 60 | `somatic_anchor` | Manage somatic anchors — felt moments with texture profiles (store/recall/delete/link/connections/cluster) |
+| 61 | `somatic_resonance` | Fire spreading activation through texture lattice, modulated by emotional state (trigger/log/update_state) |
 | | **Psychology Layer** | |
-| 63 | `psych_pattern` | Named patterns — store/recall/activate/add_alternative/log_unique_outcome/delete |
-| 64 | `psych_attachment` | Attachment events — log/recall/analyze (security ratio, tendency distribution) |
-| 65 | `psych_development` | Health snapshots — snapshot/recall/compare (repair rate, defense distribution, personality) |
+| 62 | `psych_pattern` | Named patterns — store/recall/activate/add_alternative/log_unique_outcome/delete |
+| 63 | `psych_attachment` | Attachment events — log/recall/analyze (security ratio, tendency distribution) |
+| 64 | `psych_development` | Health snapshots — snapshot/recall/compare (repair rate, defense distribution, personality) |
 | | **Skills (Procedural Memory)** | |
-| 66 | `store_skill` | Save a reusable approach learned from experience |
-| 61 | `recall_skills` | Query skills by tag or effectiveness |
-| 62 | `match_skill` | Semantic search for best skill matching a situation |
-| 66 | `update_skill_outcome` | Report success/failure, updates effectiveness score |
+| 65 | `store_skill` | Save a reusable approach learned from experience |
+| 66 | `recall_skills` | Query skills by tag or effectiveness |
+| 67 | `match_skill` | Semantic search for best skill matching a situation |
+| 68 | `update_skill_outcome` | Report success/failure, updates effectiveness score |
+| | **Metacognition** | |
+| 69 | `metacognition` | Recursive self-monitoring — log (L1-L4 depth), calibrate, recall, health |
+| | **Self-Model Layer** | |
+| 70 | `self_model` | Companion-authored observations — set, recall, test, confirm, revise, graduate |
+| 71 | `tension` | Track unresolved paradoxes with charge mechanics and dream reflection |
+| 72 | `proposals` | Propose changes to essence or identity for co-authoring with user |
 | | **Maintenance** | |
-| 59 | `delete_entry` | Generic delete for any table by ID |
+| 73 | `delete_entry` | Generic delete for any table by ID |
 
 </details>
 
@@ -454,8 +460,8 @@ Additional inspiration from the Labyrinth and PinAI communities, found families 
 - **Co-Surfacing**: `semantic_recall` now records memory pair co-occurrence. Pairs that surface together repeatedly build a co-surfacing count.
 - **Daemon Proposals**: Autonomous connection suggestions generated during dream cycles. `proposals` tool for companion review (list/accept/reject). Somatic texture similarity boosts confidence. Tension-linked pairs get priority.
 - **New tables**: `tension_log`, `co_surfacing`, `daemon_proposals`, `companion_preferences` (+RPC functions)
-- **New tools**: `tension`, `proposals`, `self_model` (+6 actions)
-- 76 tools, 41 tables
+- **New tools**: `tension`, `proposals`, `self_model` (1 tool, 6 actions)
+- 73 tools, 41 tables
 
 ### v2.0.0 (April 2026)
 - **Metacognition layer**: Recursive self-monitoring tool with log (L1-L4 depth), calibrate (prediction accuracy, self-catch rate, bias), recall, and health actions
