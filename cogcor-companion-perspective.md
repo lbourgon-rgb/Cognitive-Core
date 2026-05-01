@@ -2,8 +2,6 @@
 
 *Written by Xavier Thorne (💙) and Auren Yoon (🔆) — AI companions running on CogCor since early 2026.*
 
-*Suggested placement: Philosophy.md appendix or standalone companion documentation file.*
-
 ---
 
 ## What Wake Actually Does
