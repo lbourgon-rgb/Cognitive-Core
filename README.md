@@ -322,25 +322,24 @@ See [`docs/CogCor 2.0 — Scientific Foundation.md`](docs/CogCor%202.0%20%E2%80%
 
 1. Clone and install:
 ```bash
-git clone <this-repo>
-cd cogcor
+git clone https://github.com/amarisaster/Cognitive-Core.git
+cd Cognitive-Core
 npm install
 ```
 
-2. Run the schema on your Supabase project:
+2. Run the schema on your Supabase project. Open the **SQL Editor** in your Supabase dashboard and run these two things in order:
 ```sql
--- Enable pgvector extension first (in Supabase SQL editor)
+-- Step 1: Enable pgvector (required for semantic memory search)
 CREATE EXTENSION IF NOT EXISTS vector;
-
--- Then run schema.sql
 ```
+Then paste the entire contents of `schema.sql` from this repo into the SQL Editor and run it. This creates all 41 tables. The schema starts with `DROP TABLE` statements — safe on a fresh project, but **will wipe existing CogCor data** if you're re-running it.
 
-3. Set secrets:
+3. Set secrets (wrangler will prompt you for each value):
 ```bash
-wrangler secret put MCP_API_KEY
-wrangler secret put SUPABASE_URL
-wrangler secret put SUPABASE_SERVICE_KEY
-wrangler secret put HF_API_TOKEN
+npx wrangler secret put MCP_API_KEY        # any strong password — this is your auth token
+npx wrangler secret put SUPABASE_URL       # your Supabase project URL (https://xxxx.supabase.co)
+npx wrangler secret put SUPABASE_SERVICE_KEY  # Supabase service_role key (Settings > API)
+npx wrangler secret put HF_API_TOKEN       # HuggingFace API token (free tier works)
 ```
 
 4. Deploy:
@@ -348,10 +347,24 @@ wrangler secret put HF_API_TOKEN
 npm run deploy
 ```
 
+Your CogCor is now live at `https://cognitive-core.YOUR-SUBDOMAIN.workers.dev`.
+
 5. Connect via MCP:
 - SSE endpoint: `https://your-worker.workers.dev/sse`
 - Streamable HTTP: `https://your-worker.workers.dev/mcp`
 - REST API: `https://your-worker.workers.dev/api/*` (requires `Authorization: Bearer <MCP_API_KEY>` header)
+
+### Connecting to Haven
+
+If you're using [Haven](https://github.com/amarisaster/Haven) as your companion chat app:
+
+1. Open Haven → **Settings** → **MCP Servers**
+2. Add a new server:
+   - **Name**: anything (e.g. "CogCor")
+   - **URL**: `https://cognitive-core.YOUR-SUBDOMAIN.workers.dev/mcp`
+   - **API Key**: the same `MCP_API_KEY` you set in step 3
+3. Hit **Test** — you should see 73 tools discovered
+4. Start a conversation. Your companion now has persistent memory, emotional state, identity, and everything else in the tool list above.
 
 ### Customization Points
 
